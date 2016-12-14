@@ -1,0 +1,4 @@
+cluster/kube-up.sh和cluster/kube-down.sh都引入了 cluster/kube-env.sh和cluster/kube-util.sh
+kube-util.sh 引入了不同KUBERNETES_PROVIDER的util.sh, cluster/ubuntu/util.sh为例，他会覆盖cluster/kube-util.sh中的kube-up和kube-down函数
+在cluster/ubuntu/util.sh的kube-down函数中，引入了cluster/common.sh
+在common.sh中引入了cluster/lib/util.sh和cluster/lib/logging.sh

@@ -1,0 +1,76 @@
+root@cn3:/home/sieg/Work/dashboard/kubernetes-deploy/cluster# source deploy_env && ./kube-up.sh                                                                                                                                      
+... Starting cluster using provider: ubuntu
+... calling verify-prereqs
+Identity added: /root/.ssh/id_rsa (/root/.ssh/id_rsa)
+... calling kube-up
+/home/sieg/Work/dashboard/kubernetes-deploy/cluster/ubuntu /home/sieg/Work/dashboard/kubernetes-deploy/cluster
+Prepare flannel 0.5.0 release ...
+Prepare etcd 2.2.0 release ...
+Prepare kubernetes 1.2.0 release ...
+/home/sieg/Work/dashboard/kubernetes-deploy/cluster/ubuntu/kubernetes/server /home/sieg/Work/dashboard/kubernetes-deploy/cluster/ubuntu /home/sieg/Work/dashboard/kubernetes-deploy/cluster
+/home/sieg/Work/dashboard/kubernetes-deploy/cluster/ubuntu /home/sieg/Work/dashboard/kubernetes-deploy/cluster
+Done! All your binaries locate in kubernetes/cluster/ubuntu/binaries directory
+/home/sieg/Work/dashboard/kubernetes-deploy/cluster
+
+Deploying master and node on machine 10.165.96.74
+make-ca-cert.sh                                                                                                                                                                                    100% 4028     3.9KB/s   00:00    
+easy-rsa.tar.gz                                                                                                                                                                                    100%   42KB  42.4KB/s   00:00    
+config-default.sh                                                                                                                                                                                  100% 5190     5.1KB/s   00:00    
+util.sh                                                                                                                                                                                            100%   28KB  28.3KB/s   00:00    
+kubelet.conf                                                                                                                                                                                       100%  644     0.6KB/s   00:00    
+kube-proxy.conf                                                                                                                                                                                    100%  684     0.7KB/s   00:00    
+kubelet                                                                                                                                                                                            100% 2158     2.1KB/s   00:00    
+kube-proxy                                                                                                                                                                                         100% 2233     2.2KB/s   00:00    
+etcd.conf                                                                                                                                                                                          100%  709     0.7KB/s   00:00    
+kube-scheduler.conf                                                                                                                                                                                100%  674     0.7KB/s   00:00    
+kube-apiserver.conf                                                                                                                                                                                100%  674     0.7KB/s   00:00    
+kube-controller-manager.conf                                                                                                                                                                       100%  744     0.7KB/s   00:00    
+kube-scheduler                                                                                                                                                                                     100% 2360     2.3KB/s   00:01    
+kube-controller-manager                                                                                                                                                                            100% 2672     2.6KB/s   00:00    
+kube-apiserver                                                                                                                                                                                     100% 2358     2.3KB/s   00:00    
+etcd                                                                                                                                                                                               100% 2073     2.0KB/s   00:00    
+reconfDocker.sh                                                                                                                                                                                    100% 2074     2.0KB/s   00:00    
+kube-scheduler                                                                                                                                                                                     100%   42MB  42.0MB/s   00:01    
+kube-controller-manager                                                                                                                                                                            100%   52MB  51.8MB/s   00:01    
+kube-apiserver                                                                                                                                                                                     100%   58MB  29.1MB/s   00:02    
+etcdctl                                                                                                                                                                                            100%   12MB   6.1MB/s   00:02    
+flanneld                                                                                                                                                                                           100%   11MB  10.8MB/s   00:01    
+etcd                                                                                                                                                                                               100%   14MB  13.8MB/s   00:01    
+flanneld                                                                                                                                                                                           100%   11MB  10.8MB/s   00:01    
+kubelet                                                                                                                                                                                            100%   60MB  60.3MB/s   00:00    
+kube-proxy                                                                                                                                                                                         100%   35MB  34.8MB/s   00:01    
+flanneld.conf                                                                                                                                                                                      100%  577     0.6KB/s   00:00    
+flanneld                                                                                                                                                                                           100% 2121     2.1KB/s   00:00    
+flanneld.conf                                                                                                                                                                                      100%  568     0.6KB/s   00:00    
+flanneld                                                                                                                                                                                           100% 2131     2.1KB/s   00:00    
+etcd start/running, process 4145
+Error:  100: Key not found (/coreos.com) [3]
+{"Network":"172.16.0.0/16", "Backend": {"Type": "vxlan"}}
+{"Network":"172.16.0.0/16", "Backend": {"Type": "vxlan"}}                                                                                                                                                                      [0/62]
+docker stop/waiting
+docker start/running, process 4384
+Connection to 10.165.96.74 closed.
+Validating master
+Validating root@10.165.96.74
+Using master 10.165.96.74
+cluster "ubuntu" set.
+user "ubuntu" set.
+context "ubuntu" set.
+switched to context "ubuntu".
+Wrote config for ubuntu to /root/.kube/config
+... calling validate-cluster
+Waiting for 1 ready nodes. 0 ready nodes, 1 registered. Retrying.
+Found 1 node(s).
+NAME           STATUS    AGE
+10.165.96.74   Ready     16s
+Flag --api-version has been deprecated, flag is no longer respected and will be deleted in the next release
+Validate output:
+NAME                 STATUS    MESSAGE              ERROR
+controller-manager   Healthy   ok                   
+scheduler            Healthy   ok                   
+etcd-0               Healthy   {"health": "true"}   
+Cluster validation succeeded
+Done, listing cluster services:
+
+Kubernetes master is running at http://10.165.96.74:8080
+

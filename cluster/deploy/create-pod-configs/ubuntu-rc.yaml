@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: ubuntu1-rc
+  labels:
+    app: ubuntu1 
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    app: ubuntu1
+    version: v1
+  template:
+    metadata:
+      labels:
+        app: ubuntu1
+        version: v1
+    spec:
+      containers:
+      - image: localhost:5000/ubuntu
+        name: ubuntu1
+        tty: true
+        stdin: true
+        command: ["/bin/bash"]

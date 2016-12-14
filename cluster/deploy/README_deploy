@@ -1,0 +1,28 @@
+0. get_xxx_deps()函数中, 下载组件之前: 先检查是否已经存在，再执行函数中的下载动作
+
+1. pre-flight: 预装系统环境
+2. install cluster: 安装kubernetes集群
+   a. 下载kubernetes组件
+   b. 导出安装环境变量
+      1). 将DOWNLOAD_PATH统一改成PACKAGE_PATH
+      2). 将安装包文件夹命名为dashboard_packages
+   c. 执行安装脚本
+3. install addons: 安装kubernetes插件
+
+----------
+非侵入式修改
+----------
+用deploy_env导出环境变量
+启动过程中使用自定义的脚本，改变kube-up.sh调用过程中的行为，来完成本地安装
+
+----------
+侵入式修改
+----------
+TODO:
+对原生kubernets注入了多处修改, 希望有办法可以将这些功能剥离出来
+1. ubuntu/download-release.sh: 原本每次都要重新下载组建，现在只要本地存在就无需下载，不存在也只需下一次就可以了，之后不用重复下载
+2. ubuntu/util.sh: 对kube-up()函数中，下载easy-rsa.tar.gz的行为进行修改，只要本地存在就无需下载
+
+3. 对于dns和dashboard插件的镜像下载源进行了修改，修改为本地镜像
+   addons/dns/skydns-rc.yaml.in
+   addons/dashboard/dashboard-controller.yaml
