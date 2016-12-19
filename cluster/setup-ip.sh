@@ -1,8 +1,7 @@
 #!/bin/bash
 
 SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")
-#DEPLOY_ENV_FILE=$SCRIPT_ROOT/deploy/deploy_env
-DEPLOY_ENV_FILE=$SCRIPT_ROOT/deploy/deploy_env.bak
+DEPLOY_ENV_FILE=$SCRIPT_ROOT/deploy/deploy_env
 
 for i in `seq $#`
 do
@@ -17,6 +16,8 @@ done
 
 NUM_NODES=$(($# -2))
 
+sed -i "s/MASTER=.*/MASTER=\"$2\"/g" $DEPLOY_ENV_FILE
+sed -i "s/NODES=.*/NODES=\"${*:3}\"/g" $DEPLOY_ENV_FILE
 sed -i "s/nodes=.*/nodes=\"${*:2}\"/g" $DEPLOY_ENV_FILE
 sed -i "s/roles=.*/roles=\"${roles}\"/g" $DEPLOY_ENV_FILE
 sed -i "s/NUM_NODES=.*/NUM_NODES=\"${NUM_NODES}\"/g" $DEPLOY_ENV_FILE
