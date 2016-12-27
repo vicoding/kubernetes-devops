@@ -1,0 +1,15 @@
+#!/bin/bash
+
+INSTALL_ROOT=$(dirname "${BASH_SOURCE}")
+PREPARE_STATUS_LOG=$INSTALL_ROOT/prepare-status.log
+INSTALL_STATUS_LOG=$INSTALL_ROOT/install-status.log
+
+function prepare_failure_handler() {
+# result=$?
+# echo "<< HYPERCHAIN INSTALLER ERROR: $error failed>>"
+# exit $result
+
+  echo -n "$nodeIP" >> $PREPARE_STATUS_LOG
+  echo ${FUNCNAME[1]}-FAILED >> $PREPARE_STATUS_LOG
+  return
+}
