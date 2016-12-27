@@ -1,0 +1,57 @@
+## IF Default release
+export KUBE_VERSION=1.2.0
+export FLANNEL_VERSION=0.5.0
+export ETCD_VERSION=2.2.0
+## ELSE Latest release
+#export KUBE_VERSION=1.3.5
+#export FLANNEL_VERSION=0.5.5
+#export ETCD_VERSION=2.3.1
+
+## Deploy kube cluster
+## ubuntu/config-default.sh
+export MASTER="hyperchain@172.16.167.61"
+export NODES="hyperchain@172.16.167.65"
+export nodes="hyperchain@172.16.167.61 hyperchain@172.16.167.65"
+export roles="a i"
+export NUM_NODES="1"
+#export SERVICE_CLUSTER_IP_RANGE=192.168.3.0/24
+#export FLANNEL_NET=172.17.0.0/24
+#export DNS_SERVER_IP=192.168.3.10
+
+## Deploy addons
+## ubuntu/config-default.sh
+#ENABLE_CLUSTER_DNS="${KUBE_ENABLE_CLUSTER_DNS:-true}"
+#DNS_SERVER_IP="192.168.3.10"
+#DNS_DOMAIN="cluster.local"
+#DNS_REPLICAS=1
+#ENABLE_CLUSTER_UI="${KUBE_ENABLE_CLUSTER_UI:-true}"
+
+## Set provider
+export KUBERNETES_PROVIDER=centos
+
+## Other env vars
+#export KUBECTL_PATH=/usr/local/bin
+
+## Customized env vars
+## download options
+export DOWNLOAD_TIMEOUT=60
+#export PACKAGE_PATH=/home/hyperchain/dashboard_packages
+export PACKAGE_PATH=/home/hyperchain/dashboard_packages
+## Version number configs
+## docker registry
+export DOCKER_REGISTRY_VERSION=2
+## kubernetes addons - dns
+export PAUSE_VERSION=2.0
+export EXECHEALTHZ_AMD64_VERSION=1.1
+export KUBEDNS_AMD64_VERSION=1.6
+export KUBE_DNSMASQ_AMD64_VERSION=1.3
+## legacy components
+#export KUBE2SKY_VERSION=1.14
+#export ETCD_AMD64_VERSION=2.2.1
+#export SKYDNS_VERSION=2015-10-13-8c72f8c
+## kubernetes addons - dashboard
+export DASHBOARD_VERSION=1.1.1
+## kubernetes addons - heapster
+export HEAPSTER_VERSION=canary
+export HEAPSTER_INFLUXDB_VERSION=0.5
+export HEAPSTER_GRAFANA_VERSION=2.6.0-2
