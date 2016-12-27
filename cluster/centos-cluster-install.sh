@@ -2,6 +2,8 @@
 
 set -x
 
+SSH_TIMEOUT=10
+
 INSTALL_ROOT=$(dirname "${BASH_SOURCE}")
 
 SCRIPT_DIRECTORY=deploy
@@ -27,20 +29,12 @@ function sed_config_default() {
 function install_k8s_cluster() {
   local ii=0
 
-# for i in $nodes; do
-#   ssh $i "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
-#             source clean.sh && \
-#             clean"
-# done
   bash -c "source $SCRIPT_PATH/$ENV_FILE_NAME && cd $INSTALL_ROOT && ./kube-down.sh >> $INSTALL_ROOT/log-install-deploy.txt 2>&1"
 
   for i in $nodes; do
     nodeIP=${i#*@}
     if [[ "${roles_array[${ii}]}" == "ai" || "${roles_array[${ii}]}" == "a" ]]; then
-      echo "cp kubectl binary"
       sudo scp $INSTALL_ROOT/dashboard_packages/kubernetes/kubectl $nodeIP:/usr/local/bin
-      sudo ssh $nodeIP "mkdir -p ~/kube"
-      sudo scp $INSTALL_ROOT/dashboard_packages/kubernetes/easy-rsa.tar.gz $nodeIP:~/kube
       break
     fi
     ((ii=ii+1))
@@ -85,11 +79,11 @@ function install_k8s_remove_node() {
 
     if [ "$1" == "purge" ] && [[ "${roles_array[${ii}]}" == "ai" || "${roles_array[${ii}]}" == "a" ]]; then
       echo "Cleaning on master ${i#*@}"
-      ssh $SSH_OPTS $i 'sudo systemctl status docker.service'
+      ssh -o ConnectTimtout=$SSH_TIMEOUT $SSH_OPTS $i 'sudo systemctl status docker.service'
       tear-down-master
     elif [[ "${roles_array[${ii}]}" == "ai" || "${roles_array[${ii}]}" == "i" ]]; then
       echo "Cleaning on node ${i#*@}"
-      ssh $SSH_OPTS $i 'sudo systemctl status docker.service'
+      ssh -o ConnectTimtout=$SSH_TIMEOUT $SSH_OPTS $i 'sudo systemctl status docker.service'
       tear-down-node $i
     fi
     ((ii=ii+1))

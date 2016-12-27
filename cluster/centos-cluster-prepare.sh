@@ -19,32 +19,19 @@ for i in $nodes; do
   echo $nodeIP
   echo $PACKAGE_PATH
 
-if ([ $1 == "add" ] && [ "${roles_array[${ii}]}" == "ai" -o "${roles_array[${ii}]}" == "i" ]) || [ $1 == "deploy" ]; then
-
   if ([ $1 == "deploy" ] && [ "${roles_array[${ii}]}" == "ai" -o "${roles_array[${ii}]}" == "a" ]); then
     mkdir -p $PACKAGE_PATH
     cp -r $INSTALL_ROOT/dashboard_packages/{kubernetes,docker}/ $PACKAGE_PATH
     sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/kubectl /usr/local/bin
     sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/serviceaccount.key /tmp
-
     scp -r $SCRIPT_PATH $nodeIP:$PACKAGE_PATH
-  fi
 
-  if [ "${roles_array[${ii}]}" == "ai" ] || [ "${roles_array[${ii}]}" == "i" ]; then
-    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "mkdir -p $PACKAGE_PATH" >& /dev/null
-    ls $INSTALL_ROOT/dashboard_packages/ | grep -v kubernetes | while read f; do scp -r $INSTALL_ROOT/dashboard_packages/$f $nodeIP:$PACKAGE_PATH/ >& /dev/null; done
-    #scp -r $INSTALL_ROOT/dashboard_packages/ $nodeIP:$PACKAGE_PATH/ >& /dev/null
-    scp -r $SCRIPT_PATH $nodeIP:$PACKAGE_PATH >& /dev/null
-  fi
-
-
-  ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
-                source deploy-system-hosts.sh && \
-                install_system_hosts"
-
-  ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
-                source deploy-docker-deps.sh && \
-                install_docker_deps_bin"
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  source deploy-system-hosts.sh && \
+                  install_system_hosts"
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  source deploy-docker-deps.sh && \
+                  install_docker_deps_bin"
 
 # if [[ "${roles_array[${ii}]}" == "ai" || "${roles_array[${ii}]}" == "i" ]]; then
 #   echo ai or i
@@ -58,7 +45,21 @@ if ([ $1 == "add" ] && [ "${roles_array[${ii}]}" == "ai" -o "${roles_array[${ii}
 #                 install_docker_registry && \
 #                 push_image_to_registry hyperchain alpha"
 # fi
-fi
+  fi
+
+  if [ "${roles_array[${ii}]}" == "ai" ] || [ "${roles_array[${ii}]}" == "i" ]; then
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "mkdir -p $PACKAGE_PATH" >& /dev/null
+    ls $INSTALL_ROOT/dashboard_packages/ | grep -v kubernetes | while read f; do scp -r $INSTALL_ROOT/dashboard_packages/$f $nodeIP:$PACKAGE_PATH/ >& /dev/null; done
+    scp -r $SCRIPT_PATH $nodeIP:$PACKAGE_PATH >& /dev/null
+
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  source deploy-system-hosts.sh && \
+                  install_system_hosts"
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  source deploy-docker-deps.sh && \
+                  install_docker_deps_bin"
+  fi
+
 
   ((ii=ii+1))
 done
@@ -68,15 +69,12 @@ function remove_deps() {
 local ii=0
 for i in $nodes; do
   nodeIP=${i#*@}
-  echo $nodeIP
-  echo $PACKAGE_PATH
 
 if ([ $1 == "remove" ] && [ "${roles_array[${ii}]}" == "i" ]) || [ $1 == "purge" ]; then
 
   ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                 source deploy-docker-deps.sh && \
                 uninstall_docker_deps"
-  
   ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                 source deploy-system-hosts.sh && \
                 uninstall_system_hosts"
