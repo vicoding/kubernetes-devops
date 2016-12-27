@@ -2,6 +2,8 @@
 
 set -x
 
+SSH_TIMEOUT=10
+
 INSTALL_ROOT=$(dirname "${BASH_SOURCE}")
 
 SCRIPT_DIRECTORY=deploy
@@ -20,33 +22,27 @@ for i in $nodes; do
 if ([ $1 == "add" ] && [ "${roles_array[${ii}]}" == "ai" -o "${roles_array[${ii}]}" == "i" ]) || [ $1 == "deploy" ]; then
 
   if ([ $1 == "deploy" ] && [ "${roles_array[${ii}]}" == "ai" -o "${roles_array[${ii}]}" == "a" ]); then
-    mkdir -p $PACKAGE_PATH >& /dev/null
-    cp -r $INSTALL_ROOT/dashboard_packages/{kubernetes,docker}/ $PACKAGE_PATH >& /dev/null
-    sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/kubectl /usr/local/bin >& /dev/null
-    sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/serviceaccount.key /tmp >& /dev/null
-    sudo mkdir ~/kube{,_temp}
-    sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/*tar* ~/kube/ >& /dev/null
-    sudo cp -r $INSTALL_ROOT/easy-rsa-master ~/kube_temp/ >& /dev/null
-    sudo mkdir /root/kube{,_temp}
-    sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/*tar* /root/kube/ >& /dev/null
-    sudo cp -r $INSTALL_ROOT/easy-rsa-master /root/kube_temp/ >& /dev/null
-    #scp -r $INSTALL_ROOT/dashboard_packages/ $nodeIP:$PACKAGE_PATH/ >& /dev/null
-    scp -r $SCRIPT_PATH $nodeIP:$PACKAGE_PATH >& /dev/null
+    mkdir -p $PACKAGE_PATH
+    cp -r $INSTALL_ROOT/dashboard_packages/{kubernetes,docker}/ $PACKAGE_PATH
+    sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/kubectl /usr/local/bin
+    sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/serviceaccount.key /tmp
+
+    scp -r $SCRIPT_PATH $nodeIP:$PACKAGE_PATH
   fi
 
   if [ "${roles_array[${ii}]}" == "ai" ] || [ "${roles_array[${ii}]}" == "i" ]; then
-    ssh $nodeIP "mkdir -p $PACKAGE_PATH" >& /dev/null
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "mkdir -p $PACKAGE_PATH" >& /dev/null
     ls $INSTALL_ROOT/dashboard_packages/ | grep -v kubernetes | while read f; do scp -r $INSTALL_ROOT/dashboard_packages/$f $nodeIP:$PACKAGE_PATH/ >& /dev/null; done
     #scp -r $INSTALL_ROOT/dashboard_packages/ $nodeIP:$PACKAGE_PATH/ >& /dev/null
     scp -r $SCRIPT_PATH $nodeIP:$PACKAGE_PATH >& /dev/null
   fi
 
 
-  ssh $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+  ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                 source deploy-system-hosts.sh && \
                 install_system_hosts"
 
-  ssh $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+  ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                 source deploy-docker-deps.sh && \
                 install_docker_deps_bin"
 
@@ -77,11 +73,11 @@ for i in $nodes; do
 
 if ([ $1 == "remove" ] && [ "${roles_array[${ii}]}" == "i" ]) || [ $1 == "purge" ]; then
 
-  ssh $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+  ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                 source deploy-docker-deps.sh && \
                 uninstall_docker_deps"
   
-  ssh $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+  ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                 source deploy-system-hosts.sh && \
                 uninstall_system_hosts"
 
