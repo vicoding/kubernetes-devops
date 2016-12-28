@@ -2,14 +2,48 @@
 
 INSTALL_ROOT=$(dirname "${BASH_SOURCE}")
 PREPARE_STATUS_LOG=$INSTALL_ROOT/prepare-status.log
+PREPARE_REPORT_LOG=$INSTALL_ROOT/prepare-report.log
 INSTALL_STATUS_LOG=$INSTALL_ROOT/install-status.log
+INSTALL_REPORT_LOG=$INSTALL_ROOT/install-report.log
 
 function prepare_failure_handler() {
-# result=$?
-# echo "<< HYPERCHAIN INSTALLER ERROR: $error failed>>"
-# exit $result
-
-  echo -n "$nodeIP" >> $PREPARE_STATUS_LOG
+  local nodeIP=$1
+  echo -n "$nodeIP " >> $PREPARE_STATUS_LOG
   echo ${FUNCNAME[1]}-FAILED >> $PREPARE_STATUS_LOG
-  return
+}
+
+function prepare_failure_report() {
+# FAILED_LIST=$(grep FAILED $PREPARE_STATUS_LOG)
+# local length=$(grep FAILED $PREPARE_STATUS_LOG | wc -l)
+# local ii
+# if [ x"$FAILED_LIST" != "x" ]; then
+#   for i in $length; do
+#     echo "<<HYPERVISION INSTALLER ERROR: "
+#   done       
+#   echo $length
+# fi    
+  rc=$(grep FAILED $PREPARE_STATUS_LOG > $PREPARE_REPORT_LOG)
+}
+
+function check_prepare_report() {
+  local nodeIP=$1 
+  if [ x"$(grep $nodeIP $PREPARE_REPORT_LOG)" == "x" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+function install_failure_handler() {
+  local nodeIP=$1
+  echo -n "$nodeIP " >> $INSTALL_STATUS_LOG
+  echo ${FUNCNAME[1]}-FAILED >> $INSTALL_STATUS_LOG
+}
+
+function install_failure_handler_advanced() {
+  local nodes=$*
+  for node in $nodes; do
+    echo -n "$node " >> $INSTALL_STATUS_LOG
+    echo ${FUNCNAME[1]}-FAILED >> $INSTALL_STATUS_LOG
+  done
 }

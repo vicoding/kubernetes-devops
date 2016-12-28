@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function install_system_hosts() {
 
   if [ ! -f /etc/host.gcr ]; then
@@ -31,3 +33,23 @@ function uninstall_system_hosts() {
     sudo rm /etc/hosts.{gcr,bak}
   fi
 }
+
+while [ $# -gt 0 ]
+do
+  case $1 in
+    -i|--install)
+        install_system_hosts
+        ;;
+    -r|--remove)
+        uninstall_system_hosts
+        ;;
+    --)
+        break
+        ;;
+    *)
+        echo "unsupported option"
+        break
+        ;;
+  esac
+  shift
+done
