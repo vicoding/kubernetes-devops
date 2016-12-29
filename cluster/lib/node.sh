@@ -5,8 +5,6 @@ set -e
 INSTALL_ROOT=$(dirname "${BASH_SOURCE}")
 source $INSTALL_ROOT/../centos/util.sh
 
-TT=$(dirname "${BASH_SOURCE}")
-
 function add_master() {
   cd $INSTALL_ROOT && provision-master
 
@@ -29,20 +27,14 @@ function add_node() {
 }
 
 function remove_master() {
-  ssh -o ConnectTimtout=$SSH_TIMEOUT $SSH_OPTS $i 'sudo systemctl status docker.service'
-
   code=$(curl -X DELETE -I -m 10 -o /dev/null -s -w %{http_code} http://${LOCAL_MASTER_IP}:8080/api/v1/nodes/${LOCAL_NODE_IP})
 
-  ssh -o ConnectTimtout=$SSH_TIMEOUT $SSH_OPTS $i 'sudo systemctl status docker.service'
   tear-down-master
 }
 
 function remove_node() {
-  SSH_OPTS="-oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oLogLevel=ERROR -C"
-
   code=$(curl -X DELETE -I -m 10 -o /dev/null -s -w %{http_code} http://${LOCAL_MASTER_IP}:8080/api/v1/nodes/${LOCAL_NODE_IP})
 
-  ssh -o ConnectTimtout=$SSH_TIMEOUT $SSH_OPTS $i 'sudo systemctl status docker.service'
   tear-down-node $LOCAL_NODE_IP
 }
 

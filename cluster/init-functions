@@ -1,12 +1,13 @@
 #!/bin/bash
 
 INSTALL_ROOT=$(dirname "${BASH_SOURCE}")
-PREPARE_STATUS_LOG=$INSTALL_ROOT/prepare-status.log
-PREPARE_REPORT_LOG=$INSTALL_ROOT/prepare-report.log
-INSTALL_STATUS_LOG=$INSTALL_ROOT/install-status.log
-INSTALL_REPORT_LOG=$INSTALL_ROOT/install-report.log
+PREPARE_STATUS_LOG=$INSTALL_ROOT/report/prepare-status.log
+PREPARE_REPORT_LOG=$INSTALL_ROOT/report/prepare-report.log
+INSTALL_STATUS_LOG=$INSTALL_ROOT/report/install-status.log
+INSTALL_REPORT_LOG=$INSTALL_ROOT/report/install-report.log
+FINAL_REPORT_LOG=$INSTALL_ROOT/report/final-report.log
 
-function prepare_failure_handler() {
+function prepare_failure_handlereport/r() {
   local nodeIP=$1
   local role=$2
   echo -n "$nodeIP " >> $PREPARE_STATUS_LOG
@@ -15,15 +16,6 @@ function prepare_failure_handler() {
 }
 
 function prepare_failure_report() {
-# FAILED_LIST=$(grep FAILED $PREPARE_STATUS_LOG)
-# local length=$(grep FAILED $PREPARE_STATUS_LOG | wc -l)
-# local ii
-# if [ x"$FAILED_LIST" != "x" ]; then
-#   for i in $length; do
-#     echo "<<HYPERVISION INSTALLER ERROR: "
-#   done       
-#   echo $length
-# fi    
   rc=$(grep FAILED $PREPARE_STATUS_LOG > $PREPARE_REPORT_LOG)
 }
 
@@ -53,14 +45,12 @@ function install_failure_handler_advanced() {
 }
 
 function install_failure_report() {
-# FAILED_LIST=$(grep FAILED $PREPARE_STATUS_LOG)
-# local length=$(grep FAILED $PREPARE_STATUS_LOG | wc -l)
-# local ii
-# if [ x"$FAILED_LIST" != "x" ]; then
-#   for i in $length; do
-#     echo "<<HYPERVISION INSTALLER ERROR: "
-#   done       
-#   echo $length
-# fi    
   rc=$(grep FAILED $INSTALL_STATUS_LOG > $INSTALL_REPORT_LOG)
+}
+
+function generate_report() {
+  join $PREPARE_REPORT_LOG $INSTALL_REPORT_LOG | cut -d ' ' -f 1-3,5 > $FINAL_REPORT_LOG
+  while read report; do
+    echo "<<HYPERVISION INSTALLER ERROR: $report>>"
+  done < $FINAL_REPORT_LOG
 }
