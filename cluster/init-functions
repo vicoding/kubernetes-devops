@@ -8,7 +8,9 @@ INSTALL_REPORT_LOG=$INSTALL_ROOT/install-report.log
 
 function prepare_failure_handler() {
   local nodeIP=$1
+  local role=$2
   echo -n "$nodeIP " >> $PREPARE_STATUS_LOG
+  echo -n "$role " >> $PREPARE_STATUS_LOG
   echo ${FUNCNAME[1]}-FAILED >> $PREPARE_STATUS_LOG
 }
 
@@ -36,7 +38,9 @@ function check_prepare_report() {
 
 function install_failure_handler() {
   local nodeIP=$1
+  local role=$2
   echo -n "$nodeIP " >> $INSTALL_STATUS_LOG
+  echo -n "$role " >> $INSTALL_STATUS_LOG
   echo ${FUNCNAME[1]}-FAILED >> $INSTALL_STATUS_LOG
 }
 
@@ -46,4 +50,17 @@ function install_failure_handler_advanced() {
     echo -n "$node " >> $INSTALL_STATUS_LOG
     echo ${FUNCNAME[1]}-FAILED >> $INSTALL_STATUS_LOG
   done
+}
+
+function install_failure_report() {
+# FAILED_LIST=$(grep FAILED $PREPARE_STATUS_LOG)
+# local length=$(grep FAILED $PREPARE_STATUS_LOG | wc -l)
+# local ii
+# if [ x"$FAILED_LIST" != "x" ]; then
+#   for i in $length; do
+#     echo "<<HYPERVISION INSTALLER ERROR: "
+#   done       
+#   echo $length
+# fi    
+  rc=$(grep FAILED $INSTALL_STATUS_LOG > $INSTALL_REPORT_LOG)
 }
