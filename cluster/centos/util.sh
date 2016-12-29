@@ -222,9 +222,7 @@ function provision-master() {
   local master_ip=${MASTER#*@}
   ensure-setup-dir ${MASTER}
 
-  # scp -r ${SSH_OPTS} master config-default.sh copy-files.sh util.sh "${MASTER}:${KUBE_TEMP}"
-  kube-scp ${MASTER} "${ROOT}/../easy-rsa-master ${ROOT}/../saltbase/salt/generate-cert/make-ca-cert.sh ${ROOT}/binaries/master ${ROOT}/master ${ROOT}/config-default.sh ${ROOT}/util.sh" "${KUBE_TEMP}"
-  kube-scp ${MASTER} "${ROOT}/../saltbase/salt/generate-cert/make-ca-cert.sh ${ROOT}/binaries/master ${ROOT}/master ${ROOT}/config-default.sh ${ROOT}/util.sh" "${KUBE_TEMP}"
+  #kube-scp ${MASTER} "${ROOT}/../saltbase/salt/generate-cert/make-ca-cert.sh ${ROOT}/binaries/master ${ROOT}/master ${ROOT}/config-default.sh ${ROOT}/util.sh" "${KUBE_TEMP}"
   kube-scp ${MASTER} "${ROOT}/binaries/master ${ROOT}/master ${ROOT}/config-default.sh ${ROOT}/util.sh" "${KUBE_TEMP}"
   kube-ssh "${MASTER}" " \
     sudo cp -r ${KUBE_TEMP}/master/bin /opt/kubernetes; \
@@ -232,20 +230,12 @@ function provision-master() {
     sudo bash ${KUBE_TEMP}/master/scripts/etcd.sh; \
     sudo bash ${KUBE_TEMP}/master/scripts/apiserver.sh ${master_ip} ${ETCD_SERVERS} ${SERVICE_CLUSTER_IP_RANGE} ${ADMISSION_CONTROL}; \
     sudo bash ${KUBE_TEMP}/master/scripts/controller-manager.sh ${master_ip}; \
-    sudo bash ${KUBE_TEMP}/master/scripts/controller-manager.sh ${master_ip}; \
     sudo bash ${KUBE_TEMP}/master/scripts/scheduler.sh ${master_ip};"
     #sudo bash ${KUBE_TEMP}/make-ca-cert.sh ${master_ip} IP:${master_ip},IP:${SERVICE_CLUSTER_IP_RANGE%.*}.1,DNS:kubernetes,DNS:kubernetes.default,DNS:kubernetes.default.svc,DNS:kubernetes.default.svc.cluster.local; \
 
   kube-ssh "${MASTER}" " \
     sudo bash ${KUBE_TEMP}/master/scripts/flannel.sh ${ETCD_SERVERS} ${FLANNEL_NET}; \
     sudo bash ${KUBE_TEMP}/master/scripts/docker.sh \"${DOCKER_OPTS}\"; "
-
-  kube-ssh "${MASTER}" " \
-    sudo systemctl start kube-apiserver.service; \
-    sudo systemctl start kube-controller-manager.service; \
-    sudo systemctl start kube-scheduler.service; \
-    sudo systemctl start flannel.service; \
-    sudo systemctl start docker.service;"
 }
 
 
@@ -265,16 +255,17 @@ function provision-node() {
   local node_ip=${node#*@}
   ensure-setup-dir ${node}
 
-  kube-scp ${node} "${ROOT}/binaries/node ${ROOT}/node ${ROOT}/config-default.sh ${ROOT}/util.sh ${ROOT}/../deploy/deploy-docker-images.sh ${ROOT}/../deploy/deploy-docker-registry.sh" ${KUBE_TEMP}
+  #kube-scp ${node} "${ROOT}/binaries/node ${ROOT}/node ${ROOT}/config-default.sh ${ROOT}/util.sh ${ROOT}/../deploy/deploy-docker-images.sh ${ROOT}/../deploy/deploy-docker-registry.sh" ${KUBE_TEMP}
+  kube-scp ${node} "${ROOT}/binaries/node ${ROOT}/node ${ROOT}/config-default.sh ${ROOT}/util.sh" ${KUBE_TEMP}
   kube-ssh "${node}" " \
     sudo cp -r ${KUBE_TEMP}/node/bin /opt/kubernetes; \
     sudo chmod -R +x /opt/kubernetes/bin; \
     sudo bash ${KUBE_TEMP}/node/scripts/flannel.sh ${ETCD_SERVERS} ${FLANNEL_NET}; \
     sudo bash ${KUBE_TEMP}/node/scripts/docker.sh \"${DOCKER_OPTS}\"; \
-    sudo bash ${KUBE_TEMP}/deploy-docker-images.sh; \
-    sudo bash ${KUBE_TEMP}/deploy-docker-registry.sh; \
     sudo bash ${KUBE_TEMP}/node/scripts/kubelet.sh ${master_ip} ${node_ip}; \
     sudo bash ${KUBE_TEMP}/node/scripts/proxy.sh ${master_ip}"
+    #sudo bash ${KUBE_TEMP}/deploy-docker-images.sh; \
+    #sudo bash ${KUBE_TEMP}/deploy-docker-registry.sh; \
 }
 
 # Create dirs that'll be used during setup on target machine.
