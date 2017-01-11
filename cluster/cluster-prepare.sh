@@ -21,7 +21,7 @@ for i in $nodes; do
   if ([ $1 == "deploy" -o $1 == "init" ] && [ "${roles_array[${ii}]}" == "ai" -o "${roles_array[${ii}]}" == "a" ]); then
     mkdir -p $PACKAGE_PATH
 
-    cp -r $INSTALL_ROOT/dashboard_packages/{kubernetes,docker}/ $PACKAGE_PATH >& /dev/null
+    cp -r $INSTALL_ROOT/dashboard_packages/{kubernetes,docker,images}/ $PACKAGE_PATH >& /dev/null
     if [ $? -ne 0 ]; then
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
@@ -53,13 +53,17 @@ for i in $nodes; do
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
 
-# if [[ "${roles_array[${ii}]}" == "ai" || "${roles_array[${ii}]}" == "i" ]]; then
-#   echo ai or i
-#   ssh $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
-#                 source deploy-docker-images.sh && \
-#                 load_images_basics && \
-#                 load_images_registry"
-#   
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  ./deploy-docker-images.sh -b && ./deploy-docker-images.sh -r" >& /dev/null
+    if [ $? -ne 0 ]; then
+      prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
+    fi
+
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  ./deploy-docker-registry -i" >& /dev/null
+    if [ $? -ne 0 ]; then
+      prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
+    fi
 #   ssh $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
 #                 source deploy-docker-registry.sh && \
 #                 install_docker_registry && \
@@ -73,7 +77,8 @@ for i in $nodes; do
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
 
-    ls $INSTALL_ROOT/dashboard_packages/ | grep -v kubernetes | while read f; do scp -r $INSTALL_ROOT/dashboard_packages/$f $nodeIP:$PACKAGE_PATH/ >& /dev/null; done >& /dev/null
+    #ls $INSTALL_ROOT/dashboard_packages/ | grep -v kubernetes | while read f; do scp -r $INSTALL_ROOT/dashboard_packages/$f $nodeIP:$PACKAGE_PATH/ >& /dev/null; done >& /dev/null
+    scp -r $INSTALL_ROOT/dashboard_packages/docker $nodeIP:$PACKAGE_PATH/ >& /dev/null
     if [ $? -ne 0 ]; then
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi

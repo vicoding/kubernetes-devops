@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -e
 
 INSTALL_ROOT=$(dirname "${BASH_SOURCE}")
 
@@ -41,7 +41,7 @@ echo
 function load_images_basics() {
 echo -n "load_images_basics"
   sudo /usr/local/bin/docker load < $IMAGE_PATH/pause-2.0.tar
-  sudo /usr/local/bin/docker load < $IMAGE_PATH/pause-0.8.0.tar
+# sudo /usr/local/bin/docker load < $IMAGE_PATH/pause-0.8.0.tar
 echo " ... done"
 }
 
@@ -83,5 +83,22 @@ echo -n "load_images_heapster"
 echo " ... done"
 }
 
-load_images_basics >& /tmp/log
-load_images_registry >> /tmp/log 2>&1
+while [ $# -gt 0 ]
+do
+  case $1 in
+    -b|--basic)
+        load_images_basics >> /tmp/log 2>&1
+        ;;
+    -r|--registry)
+        load_images_registry >> /tmp/log 2>&1
+        ;;
+    --)
+        break
+        ;;
+    *)
+        echo "unsupported option"
+        break
+        ;;
+  esac
+  shift
+done

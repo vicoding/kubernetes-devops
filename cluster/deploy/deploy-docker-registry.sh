@@ -21,7 +21,7 @@ function install_docker_registry() {
 #  sudo docker load < ${IMAGE_PATH}/registry-${DOCKER_REGISTRY_VERSION}.tar >& /dev/null
   
   echo "run registry and expose 5000 port"
-  sudo /usr/local/bin/docker stop registry && sudo /usr/local/bin/docker rm registry
+  #sudo /usr/local/bin/docker stop registry && sudo /usr/local/bin/docker rm registry
   sudo /usr/local/bin/docker run -d -p 5000:5000 --restart=always --name registry registry:${DOCKER_REGISTRY_VERSION}
 }
 
@@ -63,5 +63,22 @@ function uninstall_docker_registry() {
   sudo /usr/local/bin/docker rmi register:${DOCKER_REGISTRY_VERSION}
 }
 
-push_image_to_registry hyperchain 1.1 >> /tmp/log 2>&1
-install_docker_registry >> /tmp/log 2>&1
+while [ $# -gt 0 ]
+do
+  case $1 in
+    -r|--install)
+        install_docker_registry >> /tmp/log 2>&1
+        ;;
+    -p|--push)
+        push_image_to_registry hyperchain 1.1 >> /tmp/log 2>&1
+        ;;
+    --)
+        break
+        ;;
+    *)
+        echo "unsupported option"
+        break
+        ;;
+  esac
+  shift
+done
