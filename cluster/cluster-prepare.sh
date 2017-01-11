@@ -115,6 +115,8 @@ fi
 done
 }
 
+clean_report
+
 while [ $# -gt 0 ]
 do
   case $1 in

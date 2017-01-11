@@ -7,7 +7,7 @@ INSTALL_STATUS_LOG=$INSTALL_ROOT/report/install-status.log
 INSTALL_REPORT_LOG=$INSTALL_ROOT/report/install-report.log
 FINAL_REPORT_LOG=$INSTALL_ROOT/report/final-report.log
 
-function prepare_failure_handlereport/r() {
+function prepare_failure_handler() {
   local nodeIP=$1
   local role=$2
   echo -n "$nodeIP " >> $PREPARE_STATUS_LOG
@@ -49,8 +49,22 @@ function install_failure_report() {
 }
 
 function generate_report() {
-  join $PREPARE_REPORT_LOG $INSTALL_REPORT_LOG | cut -d ' ' -f 1-3,5 > $FINAL_REPORT_LOG
-  while read report; do
-    echo "<<HYPERVISION INSTALLER ERROR: $report>>"
-  done < $FINAL_REPORT_LOG
+  if [ ! x"$(grep FAILED $INSTALL_REPORT_LOG)" == "x" ]; then
+    join $PREPARE_STATUS_LOG $INSTALL_REPORT_LOG | cut -d ' ' -f 1-3,5 > $FINAL_REPORT_LOG
+    while read report; do
+      echo "<<HYPERVISION INSTALLER ERROR: $report>>"
+    done < $FINAL_REPORT_LOG
+  fi
+}
+
+function clean_report() {
+  now=`date '+%Y-%m-%d-%H:%M:%S'`
+  backup_dir=$INSTALL_ROOT/report/backup-$now
+  cp $PREPARE_STATUS_LOG $PREPARE_REPORT_LOG $INSTALL_STATUS_LOG $INSTALL_REPORT_LOG $FINAL_REPORT_LOG $backup_dir
+
+  > $PREPARE_STATUS_LOG
+  > $PREPARE_REPORT_LOG
+  > $INSTALL_STATUS_LOG
+  > $INSTALL_REPORT_LOG
+  > $FINAL_REPORT_LOG
 }
