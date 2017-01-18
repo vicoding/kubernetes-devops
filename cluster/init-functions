@@ -15,6 +15,14 @@ function prepare_failure_handler() {
   echo ${FUNCNAME[1]}-FAILED >> $PREPARE_STATUS_LOG
 }
 
+function prepare_success_handler() {
+  local nodeIP=$1
+  local role=$2
+  echo -n "$nodeIP " >> $PREPARE_STATUS_LOG
+  echo -n "$role " >> $PREPARE_STATUS_LOG
+  echo ${FUNCNAME[1]}-SUCCESSFUL >> $PREPARE_STATUS_LOG
+}
+
 function prepare_failure_report() {
   rc=$(grep FAILED $PREPARE_STATUS_LOG > $PREPARE_REPORT_LOG)
 }
@@ -60,6 +68,7 @@ function generate_report() {
 function clean_report() {
   now=`date '+%Y-%m-%d-%H:%M:%S'`
   backup_dir=$INSTALL_ROOT/report/backup-$now
+  mkdir -p $backup_dir
   cp $PREPARE_STATUS_LOG $PREPARE_REPORT_LOG $INSTALL_STATUS_LOG $INSTALL_REPORT_LOG $FINAL_REPORT_LOG $backup_dir
 
   > $PREPARE_STATUS_LOG

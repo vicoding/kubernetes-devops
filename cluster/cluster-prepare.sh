@@ -13,6 +13,9 @@ ENV_FILE_NAME=deploy_env
 source $SCRIPT_PATH/$ENV_FILE_NAME
 roles_array=($roles)
 
+MASTER_IP=${MASTER#*@}
+
+
 function install_deps() {
 local ii=0
 for i in $nodes; do
@@ -31,7 +34,7 @@ for i in $nodes; do
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
 
-    sudo cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/serviceaccount.key /tmp >& /dev/null
+    cp -r $INSTALL_ROOT/dashboard_packages/kubernetes/serviceaccount.key /tmp >& /dev/null
     if [ $? -ne 0 ]; then
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
@@ -41,7 +44,13 @@ for i in $nodes; do
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
 
-    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+    cp -r $INSTALL_ROOT/docker-registry $PACKAGE_PATH >& /dev/null
+    if [ $? -ne 0 ]; then
+      prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
+    fi
+
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "export MASTER_SERVER_IP=$MASTER_IP && \
+                  cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                   ./deploy-system-hosts.sh -i" >& /dev/null
     if [ $? -ne 0 ]; then
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
@@ -53,22 +62,7 @@ for i in $nodes; do
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
 
-    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
-                  ./deploy-docker-images.sh -b && ./deploy-docker-images.sh -r" >& /dev/null
-    if [ $? -ne 0 ]; then
-      prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
-    fi
-
-    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
-                  ./deploy-docker-registry -i" >& /dev/null
-    if [ $? -ne 0 ]; then
-      prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
-    fi
-#   ssh $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
-#                 source deploy-docker-registry.sh && \
-#                 install_docker_registry && \
-#                 push_image_to_registry hyperchain alpha"
-# fi
+    prepare_success_handler $nodeIP ${roles_array[${ii}]}
   fi
 
   if ([ $1 == "deploy" -o $1 == "add" ] && [ "${roles_array[${ii}]}" == "ai" -o "${roles_array[${ii}]}" == "i" ]); then
@@ -83,22 +77,41 @@ for i in $nodes; do
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
 
+    scp -r $INSTALL_ROOT/dashboard_packages/images/pause-2.0.tar $nodeIP:$PACKAGE_PATH/images >& /dev/null
+    if [ $? -ne 0 ]; then
+      prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
+    fi
+
     scp -r $SCRIPT_PATH $nodeIP:$PACKAGE_PATH >& /dev/null
     if [ $? -ne 0 ]; then
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
 
-    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && ./deploy-system-hosts.sh -i" >& /dev/null
+    scp -r $INSTALL_ROOT/docker-registry $nodeIP:$PACKAGE_PATH >& /dev/null
     if [ $? -ne 0 ]; then
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
 
-    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && ./deploy-docker-deps.sh -i" >& /dev/null
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "export MASTER_SERVER_IP=$MASTER_IP && \
+                  cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  ./deploy-system-hosts.sh -i" >& /dev/null
     if [ $? -ne 0 ]; then
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
+
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  ./deploy-docker-deps.sh -i" >& /dev/null
+    if [ $? -ne 0 ]; then
+      prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
+    fi
+
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                  ./deploy-docker-registry.sh -c" >& /dev/null
+    if [ $? -ne 0 ]; then
+      prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
+    fi
+    prepare_success_handler $nodeIP ${roles_array[${ii}]}
   fi
-
 
   ((ii=ii+1))
 done
@@ -111,6 +124,8 @@ for i in $nodes; do
 
 if ([ $1 == "remove" ] && [ "${roles_array[${ii}]}" == "i" ]) || [ $1 == "purge" ]; then
 
+  ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                ./deploy-docker-registry.sh -r"
   ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                 ./deploy-docker-deps.sh -r"
   ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
@@ -128,7 +143,7 @@ do
     -d|--deploy)
         install_deps deploy >> $INSTALL_ROOT/log-prepare-deploy.txt 2>&1
         ;;
-    -i|--init)
+    -m|--master)
         install_deps init >> $INSTALL_ROOT/log-prepare-deploy.txt 2>&1
         ;;
     -a|--add)

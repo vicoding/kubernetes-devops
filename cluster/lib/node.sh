@@ -5,8 +5,16 @@ set -e
 INSTALL_ROOT=$(dirname "${BASH_SOURCE}")
 source $INSTALL_ROOT/../centos/util.sh
 
+SCRIPT_DIRECTORY=deploy
+SCRIPT_PATH=$INSTALL_ROOT/../$SCRIPT_DIRECTORY
+ENV_FILE_NAME=deploy_env
+source $SCRIPT_PATH/$ENV_FILE_NAME
+roles_array=($roles)
+
+MASTER_IP=${MASTER#*@}
+
 function add_master() {
-  cd $INSTALL_ROOT && provision-master
+  cd $INSTALL_ROOT/../centos && provision-master
 
 :<<DISABLE
   detect-master
@@ -45,19 +53,19 @@ while [ $# -gt 0 ]
 do
   case $1 in
     -m|--master)
-        add_master
+        add_master >> $INSTALL_ROOT/../log_node_add_master.log 2>&1
         break
         ;;
     -n|--node)
-        add_node
+        add_node >> $INSTALL_ROOT/../log_node_add_node.log 2>&1
         break
         ;;
     -p|--purge)
-        remove_master
+        remove_master >> $INSTALL_ROOT/../log_node_remove_master.log 2>&1
         break
         ;;
     -r|--remove)
-        remove_node
+        remove_node >> $INSTALL_ROOT/../log_node_remove_node.log 2>&1
         break
         ;;
     --)

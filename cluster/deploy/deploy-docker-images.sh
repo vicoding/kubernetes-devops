@@ -87,10 +87,10 @@ while [ $# -gt 0 ]
 do
   case $1 in
     -b|--basic)
-        load_images_basics >> /tmp/log 2>&1
+        load_images_basics >> /tmp/log_docker_load_images_basics.log 2>&1
         ;;
     -r|--registry)
-        load_images_registry >> /tmp/log 2>&1
+        load_images_registry >> /tmp/log_docker_load_images_registry.log 2>&1
         ;;
     --)
         break

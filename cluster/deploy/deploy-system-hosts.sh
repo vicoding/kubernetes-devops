@@ -2,6 +2,8 @@
 
 set -e
 
+MASTER_SERVER_IP=${MASTER_SERVER_IP:-"127.0.0.1"}
+
 function install_system_hosts() {
 
   if [ ! -f /etc/host.gcr ]; then
@@ -12,14 +14,17 @@ function install_system_hosts() {
       sudo cp /etc/hosts{.bak,}
     fi
 
-    sudo bash -c 'cat << EOF >> /etc/hosts
+    sudo bash -c "cat << EOF >> /etc/hosts
 
 # gcr
 64.233.162.83   www.gcr.io gcr.io
 64.233.162.83   https://gcr.io/
 64.233.162.83   accounts.google.com
 64.233.162.83   storage.googleapis.com
-EOF'
+
+#docker-registry
+$MASTER_SERVER_IP   docker.hyperchain.cn
+EOF"
 
     sudo cp /etc/hosts{,.gcr}
   else

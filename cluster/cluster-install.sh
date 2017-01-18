@@ -63,10 +63,35 @@ function install_k8s_init_master() {
   local ii=0
   for i in $nodes; do
     nodeIP=${i#*@}
-    check_prepare_report
+    check_prepare_report $nodeIP
     if [ $? -eq 0 ]; then
       if [[ "${roles_array[${ii}]}" == "ai" || "${roles_array[${ii}]}" == "a" ]]; then
         bash -c "source $SCRIPT_PATH/$ENV_FILE_NAME && cd $INSTALL_ROOT/lib && ./node.sh -m $MASTER_IP $nodeIP" >& /dev/null 
+        if [ $? -ne 0 ]; then
+          install_failure_handler $nodeIP ${roles_array[${ii}]}; return
+        fi
+        sleep 3
+
+        ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                      ./deploy-docker-images.sh -b" >& /dev/null
+        if [ $? -ne 0 ]; then
+          install_failure_handler $nodeIP ${roles_array[${ii}]}; return
+        fi
+
+        ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                      ./deploy-docker-images.sh -r" >& /dev/null
+        if [ $? -ne 0 ]; then
+          install_failure_handler $nodeIP ${roles_array[${ii}]}; return
+        fi
+
+        ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                      ./deploy-docker-registry.sh -i" >& /dev/null
+        if [ $? -ne 0 ]; then
+          install_failure_handler $nodeIP ${roles_array[${ii}]}; return
+        fi
+
+        ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                      ./deploy-docker-registry.sh -p" >& /dev/null
         if [ $? -ne 0 ]; then
           install_failure_handler $nodeIP ${roles_array[${ii}]}; return
         fi
@@ -82,10 +107,16 @@ function install_k8s_new_node() {
   local ii=0
   for i in $nodes; do
     nodeIP=${i#*@}
-    check_prepare_report
+    check_prepare_report $nodeIP
     if [ $? -eq 0 ]; then
       if [[ "${roles_array[${ii}]}" == "ai" || "${roles_array[${ii}]}" == "i" ]]; then
         bash -c "source $SCRIPT_PATH/$ENV_FILE_NAME && cd $INSTALL_ROOT/lib && ./node.sh -n $MASTER_IP $nodeIP" >& /dev/null 
+        if [ $? -ne 0 ]; then
+          install_failure_handler $nodeIP ${roles_array[${ii}]}; return
+        fi
+
+        ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
+                      ./deploy-docker-images.sh -b" >& /dev/null
         if [ $? -ne 0 ]; then
           install_failure_handler $nodeIP ${roles_array[${ii}]}; return
         fi
