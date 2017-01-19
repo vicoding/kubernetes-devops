@@ -45,7 +45,7 @@ function push_image_to_registry() {
   #fi
 
   echo "tag it and push to registry"
-  sudo /usr/local/bin/docker tag ${IMAGE_NAME}:${IMAGE_VERSION} docker.hyperchain.cn:5000/${IMAGE_NAME}-${IMAGE_VERSION}
+  sudo /usr/local/bin/docker tag -f ${IMAGE_NAME}:${IMAGE_VERSION} docker.hyperchain.cn:5000/${IMAGE_NAME}-${IMAGE_VERSION}
 
   local counter=0
   sudo /usr/local/bin/docker push docker.hyperchain.cn:5000/${IMAGE_NAME}-${IMAGE_VERSION}
@@ -95,6 +95,7 @@ do
         ;;
     -p|--push)
         push_image_to_registry hyperchain 1.1 >> /tmp/log_docker_push_image_to_registry.log 2>&1
+        push_image_to_registry hpv-airbus 0.1 >> /tmp/log_docker_push_image_to_registry.log 2>&1
         ;;
     -c|--client)
         install_docker_registry_client >> /tmp/log_docker_install_docker_registry_client.log 2>&1

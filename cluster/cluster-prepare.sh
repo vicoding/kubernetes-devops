@@ -131,6 +131,7 @@ if ([ $1 == "remove" ] && [ "${roles_array[${ii}]}" == "i" ]) || [ $1 == "purge"
   ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "cd $PACKAGE_PATH/$SCRIPT_DIRECTORY && source $ENV_FILE_NAME && \
                 ./deploy-system-hosts.sh -r"
 
+# TODO: remove kubectl on KUBE_MASTER
 fi
 done
 }

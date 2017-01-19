@@ -22,6 +22,7 @@ function install_docker_deps_bin() {
 
 function uninstall_docker_deps_bin() {
   sudo rm -rf /usr/local/bin/docker*
+  sudo rm -rf /var/lib/docker
 }
 
 while [ $# -gt 0 ]
