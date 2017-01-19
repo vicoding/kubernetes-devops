@@ -66,7 +66,7 @@ for i in $nodes; do
   fi
 
   if ([ $1 == "deploy" -o $1 == "add" ] && [ "${roles_array[${ii}]}" == "ai" -o "${roles_array[${ii}]}" == "i" ]); then
-    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "mkdir -p $PACKAGE_PATH" >& /dev/null
+    ssh -o ConnectTimeout=$SSH_TIMEOUT $nodeIP "mkdir -p $PACKAGE_PATH/images" >& /dev/null
     if [ $? -ne 0 ]; then
       prepare_failure_handler $nodeIP ${roles_array[${ii}]}; return
     fi
