@@ -16,18 +16,18 @@ MASTER_IP=${MASTER#*@}
 function add_master() {
   cd $INSTALL_ROOT/../centos && provision-master
 
-:<<DISABLE
-  detect-master
-
-  # set CONTEXT and KUBE_SERVER values for create-kubeconfig() and get-password()
-  export CONTEXT="centos"
-  export KUBE_SERVER="http://${KUBE_MASTER_IP}:8080"
-  source "${KUBE_ROOT}/cluster/common.sh"
-
-  # set kubernetes user and password
-  get-password
-  create-kubeconfig
-DISABLE
+#:<<DISABLE
+#  detect-master
+#
+#  # set CONTEXT and KUBE_SERVER values for create-kubeconfig() and get-password()
+#  export CONTEXT="centos"
+#  export KUBE_SERVER="http://${KUBE_MASTER_IP}:8080"
+#  source "${KUBE_ROOT}/cluster/common.sh"
+#
+#  # set kubernetes user and password
+#  get-password
+#  create-kubeconfig
+#DISABLE
 }
 
 function add_node() {
